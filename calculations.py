@@ -39,11 +39,17 @@ def get_top_track(artist_id, cur, conn):
     return (artist_id, sorted_tracks[0][0])
 
 def join_artists(tup, cur, conn):
+    '''Takes in a tuple (with artist_ids and track names), cur, conn and returns a tuple of the corresponding artist names and tracks. 
+    This is how the artist_id is used as a key between the different tables.''' 
     cur.execute(f"SELECT Spotify_Artists.artist_name FROM Spotify_Artists JOIN Spotify_Data ON Spotify_Data.artist_id = Spotify_Artists.artist_id WHERE Spotify_Data.artist_id = '{str(tup[0])}' AND Spotify_Data.track_name = '{tup[1]}'")
     artists = cur.fetchall()
     return (artists[0][0], tup[1])
 
 def compare_with_itunes(l2, cur, conn):
+    '''Takes in a list of tuples (with artist name and tracks), cur, conn and returns a list of the songs that appear in both the iTunes and Spotify search. 
+    Selects the track name from iTunes table and compares it to each of the track names in the list which come from Spotify. If the song contains "(feat." only the beginning of the track names are compared. 
+    If the song does not contain feat. compare the full track name. 
+    After the track names are compared if they are the same, that track is appended to the list of songs that both Spotify and iTunes have in common.'''
     cur.execute("SELECT itunes_track_name FROM iTunes")
     songs = cur.fetchall()
     count = 0
@@ -59,6 +65,7 @@ def compare_with_itunes(l2, cur, conn):
     return common_list
 
 def get_top_10_artist_names_and_pop(l, cur, conn):
+    '''Takes in a list of tuples, cur, conn and returns a list of tuples with the artist names and popularity.'''
     names = []
     for tup in l:
         cur.execute(f"SELECT Spotify_Artists.artist_name FROM Spotify_Artists JOIN Spotify_Data ON Spotify_Data.artist_id = Spotify_Artists.artist_id WHERE Spotify_Data.artist_id = '{str(tup[0])}'")
@@ -67,6 +74,7 @@ def get_top_10_artist_names_and_pop(l, cur, conn):
     return names
 
 def get_itunes_songs_and_artists(l, cur, conn):
+    '''Takes in a list of tuples, cur, conn and returns a list of tuples with the track name and corresponding artist's name.'''
     info = []
     for item in l:
         cur.execute(f"SELECT iTunes_artists.artist_name FROM iTunes_artists JOIN iTunes ON iTunes.artist_id = iTunes_artists.artist_id WHERE iTunes.itunes_track_name = '{str(item)}'")
@@ -76,6 +84,9 @@ def get_itunes_songs_and_artists(l, cur, conn):
 
 
 def itunes_csv_out(l, file_name, cur, conn):
+    '''Takes in a list, a file named "common_songs.csv", cur, conn and outputs text to a csv file. 
+    Calls the get_itunes_songs_and_artists function in order to collect the list of tuples of artists and songs that appeared in both iTunes and Spotify. Also keeps count of how many songs are in this list.
+    Writes these names and tracks to a csv file, as well as the count of the number of songs that appear.'''
     with open(file_name, "w", newline="") as fileout:
         title = fileout.write("SONGS THAT APPEAR IN BOTH SPOTIFY AND ITUNES SEARCHES\n")
         header = fileout.write("Song Name,Artist Name\n")
@@ -90,6 +101,9 @@ def itunes_csv_out(l, file_name, cur, conn):
 
 
 def csv_out(l, file_name, cur, conn):
+    '''Takes in a list, a csv file named "average_popularity.csv", cur, conn and outputs text to a csv file.
+    Calls the get_top_10_artist_names_and_pop function to get a list of tuples of the top 10 artist names and their average popularity.
+    Writes each tuple to the csv file.'''
      with open(file_name, "w", newline="") as fileout:
         title = fileout.write("TOP TEN TIKTOK ARTISTS AND AVERAGE POPULARITY ON SPOTIFY\n")
         header = fileout.write("Artist Name,Average Popularity\n")
@@ -100,6 +114,8 @@ def csv_out(l, file_name, cur, conn):
             writer.writerow(row)
 
 def bar_chart_visualization(l, cur, conn):
+    '''Takes in a list, cur, conn and shows a visualization of a bar chart of the top 10 artist's average popularity. 
+    Calls the get_top_10_artist_names_and_pop function to get the data for the bar chart.'''
     fig = plt.figure(figsize=(80,5))
     ax1 = fig.add_subplot(111)
     artists = []
@@ -117,6 +133,8 @@ def bar_chart_visualization(l, cur, conn):
     plt.show()
 
 def scatterplot_visualization(cur, conn):
+    '''Takes in cur, conn and returns the correlation coefficient of Popularity vs. Dance.
+    Also creates a scatterplot of Popularity vs. Danceability'''
     cur.execute("SELECT danceability FROM Spotify_Data")
     danceability = cur.fetchall()
     danceability_list = []
@@ -148,6 +166,8 @@ def scatterplot_visualization(cur, conn):
 
 
 def scatterplot_energy_visualization(cur, conn):
+    '''Takes in cur, conn and returns the correlation coefficient of Popularity vs. Energy. 
+    Also creates a scatterplot of Popularity vs. Energy.'''
     cur.execute("SELECT energy FROM Spotify_Data")
     energy = cur.fetchall()
     energy_list = []
@@ -178,6 +198,8 @@ def scatterplot_energy_visualization(cur, conn):
     return value
 
 def scatterplot_liveness_visualization(cur, conn):
+    '''Takes in cur, conn and returns the correlation coefficient of Popularity vs. Liveness. 
+    Also creates a scatterplot of Popularity vs. Liveness'''
     cur.execute("SELECT liveness FROM Spotify_Data")
     liveness = cur.fetchall()
     liveness_list = []
@@ -208,6 +230,8 @@ def scatterplot_liveness_visualization(cur, conn):
     return value
 
 def scatterplot_tempo_visualization(cur, conn):
+    '''Takes in cur, conn and returns the correlation coefficient for Popularity vs. Tempo.
+    Also creates a scatterplot of Popularity vs. Tempo.'''
     cur.execute("SELECT tempo FROM Spotify_Data")
     tempo = cur.fetchall()
     tempo_list = []
@@ -238,6 +262,8 @@ def scatterplot_tempo_visualization(cur, conn):
     return value
 
 def write_correlations(filename, cur, conn):
+    '''Takes in a file named "correlations.txt", cur, conn and outputs to a txt file. 
+    Calls the four scatterplot functions to display the scatterplots and get the correlations. These correlations are written to the txt file.'''
     with open(filename, "w", newline="") as fileout:
         fileout.write("CORRELATION COEFFICIENTS\n")
         dance_value = scatterplot_visualization(cur,conn)
@@ -254,6 +280,8 @@ def write_correlations(filename, cur, conn):
         
 
 def main():
+    '''Takes in no parameters and calls the functions above in order to process the calculations using the "Music.db" database,
+    output the results of the calculations onto different files, as well as produce visualizations.'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/Music.db')
     cur = conn.cursor()
