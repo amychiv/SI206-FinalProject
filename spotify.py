@@ -94,6 +94,9 @@ def setUpDatabase(db_name):
     return cur, conn
 
 def setUpSpotifyTable(artist_list, cur, conn):
+     '''Takes in artist_list (which is cleaned), cur, and conn as parameter. Uses each artist in artist_list to access data from
+    get_track_data() and get_audio_features(), which is inserted into the Spotify table in the Music.db. This function limits results
+    count to 25.'''
     cur.execute("CREATE TABLE IF NOT EXISTS Spotify_Data (track_name TEXT, track_id TEXT, artist_id INTEGER, popularity INTEGER, danceability NUMBER, energy NUMBER, liveness NUMBER, tempo NUMBER)")
     track_data = get_track_data(artist_list)
     cur.execute("SELECT COUNT(*) FROM Spotify_Data")
@@ -118,6 +121,8 @@ def setUpSpotifyTable(artist_list, cur, conn):
     
 
 def setUpArtistTable(artist_list, cur, conn):
+     '''Takes in artist_list (which is cleaned), cur, and conn as parameters. Assigns each artist name an artist_id, which is then inserted into the
+    Spotify_Artist table'''
     cur.execute("CREATE TABLE IF NOT EXISTS Spotify_Artists (artist_id INTEGER, artist_name TEXT UNIQUE)")
     artist_id = 0
     for artist in artist_list:
