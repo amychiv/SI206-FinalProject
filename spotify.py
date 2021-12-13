@@ -48,6 +48,8 @@ def get_artists_cleaned(l):
     return artists
 
 def get_track_data(artist_list):
+     '''Takes in a list of artists from get_artists_cleaned(). Iterates through each artist in this list and uses the artist name as a search query with the Spotify API. 
+     Returns a list of tuples in the format: (track name, track id, artist name, track popularity)'''
     track_data = []
     for artist in artist_list:
         for i in range(0,10,2):
@@ -74,6 +76,7 @@ def get_track_data(artist_list):
 
 
 def get_audio_features(track_id):
+  
     audio_features = sp.audio_features(track_id)
     danceability = audio_features[0]['danceability']
     energy = audio_features[0]['energy']
@@ -123,6 +126,7 @@ def setUpArtistTable(artist_list, cur, conn):
 
 
 def main():
+    '''Takes in no parameters and calls all of the functions above.'''
     artist_cleaned = (get_artists_cleaned(get_all_artists()))
     artist_list = get_all_artists()
     cur, conn = setUpDatabase('Music.db')
