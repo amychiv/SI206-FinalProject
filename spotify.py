@@ -14,6 +14,8 @@ sp = spotipy.Spotify(client_credentials_manager
 client_credentials_manager)
 
 def get_all_artists():
+     '''Takes no parameters. Returns list of unique artists from the Seventeen website using BeautifulSoup. Uses regex to ensure only the artist name
+    is in the returned list.'''
     lines_list = []
     with open('tiktok_songs.html') as f:
         content = f.read()
@@ -31,6 +33,8 @@ def get_all_artists():
     return lines_list
 
 def get_artists_cleaned(l):
+    '''Takes in list of artists that get_all_artists() returns. Returns the same list of artists, but without the '(feat. featured_artist)'
+    part of the artist name to be used in our search queries.'''
     regex= '(.+)(?:\s+ft\..+)'
     artists = []
     for line in l:
