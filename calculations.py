@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 def get_top_10_artists_ids_and_popularity(cur, conn):
+    '''Takes in cur and conn, and returns a list of the 10 highest average popularities. 
+    Selects all of the artist_ids from the Spotify_Data table and then loops through these ids in order to get the popularity of each of the artist's songs. 
+    The popularities are then averaged for each artist, appended to a list, and sorted in descending order.'''
     cur.execute("SELECT artist_id FROM Spotify_Data")
     ids = cur.fetchall()
     popularities = []
@@ -29,6 +32,7 @@ def get_top_10_artists_ids_and_popularity(cur, conn):
     return sorted_averages[0:10]
         
 def get_top_track(artist_id, cur, conn):
+    '''Takes in artist_id, cur, conn, and returns a tuple of the artist_id and the corresponding artist's top track.'''
     cur.execute("SELECT track_name, popularity FROM Spotify_Data WHERE artist_id = " + str(artist_id))
     tracks = cur.fetchall()
     sorted_tracks = sorted(tracks, key = lambda x:x[1], reverse = True)
