@@ -6,12 +6,15 @@ import sqlite3
 import os
 
 def itunes_search(searchterm):   
+    '''Takes in a search term as a parameter and returns its search results from the iTunes API'''
     base_url = "https://itunes.apple.com/search"
     response = requests.get(base_url, params = {"term": searchterm, "media": "music", "entity": "musicTrack", "limit": 25})
     data = json.loads(response.text)
     return data["results"]
 
 def get_all_artists():
+    '''Takes no parameters. Returns list of unique artists from the Seventeen website using BeautifulSoup. Uses regex to ensure only the artist name
+    is in the returned list.'''
     lines_list = []
     full_path = os.path.join(os.path.dirname(__file__), 'tiktok_songs.html')
     with open(full_path) as f:
@@ -30,6 +33,8 @@ def get_all_artists():
     return lines_list
 
 def get_artists_cleaned(l):
+    '''Takes in list of artists that get_all_artists() returns. Returns the same list of artists, but without the '(feat. featured_artist)'
+    part of the artist name to be used in our search queries.'''
     regex= '(.+)(?:\s+ft\..+)'
     artists = []
     for line in l:
@@ -43,6 +48,8 @@ def get_artists_cleaned(l):
     return artists
 
 def get_top_5_tracks(artist):
+    '''Takes in a artist name (cleaned) as a search query with the iTunes API and returns the first five unique song names that appear in
+    the search results.'''
     results = itunes_search(artist)
     tracks = []
     names = []
@@ -55,12 +62,15 @@ def get_top_5_tracks(artist):
     return tracks[:5]
 
 def setUpDatabase(db_name):
+    '''Takes in the database Music.db as a parameter, sets up the database, and returns cur and conn.'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
 
 def set_up_itunes_table(artist_list, cur, conn):
+    '''Takes in artist_list (which is cleaned), cur, and conn as parameters. Inserts song name, artist name, and search rank from get_top_5_tracks() into
+    the iTunes table. Limits how many songs are added to the table to 25.'''
     cur.execute("CREATE TABLE IF NOT EXISTS iTunes (itunes_track_name TEXT, artist_id INTEGER, search_rank INTEGER)")
     cur.execute("SELECT COUNT(itunes_track_name) From iTunes")
     count = cur.fetchone()[0] // 25 * 5
@@ -79,9 +89,9 @@ def set_up_itunes_table(artist_list, cur, conn):
     print('done')
     conn.commit()
 
-
-
 def set_up_itunes_artist_table(artist_list, cur, conn):
+    '''Takes in artist_list (which is cleaned), cur, and conn as parameters. Assigns each artist name an artist_id, which is then inserted into the
+    iTunes_artist table'''
     cur.execute("CREATE TABLE IF NOT EXISTS iTunes_artists (artist_id INTEGER, artist_name TEXT UNIQUE)")
     artist_id = 0
     for artist in artist_list:
@@ -90,6 +100,7 @@ def set_up_itunes_artist_table(artist_list, cur, conn):
     conn.commit()
 
 def main():
+    '''Takes in no parameters and calls all of the functions above.'''
     artist_list = get_artists_cleaned(get_all_artists())
     cur, conn = setUpDatabase('Music.db')
     set_up_itunes_artist_table(artist_list, cur, conn)
