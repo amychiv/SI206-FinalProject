@@ -76,7 +76,8 @@ def get_track_data(artist_list):
 
 
 def get_audio_features(track_id):
-  
+    '''Takes in a song's track_id, access the song's audio features from the Spotify API and returns a tuple of its ratings in the 
+    format: (dancability, energy, liveness, tempo)'''
     audio_features = sp.audio_features(track_id)
     danceability = audio_features[0]['danceability']
     energy = audio_features[0]['energy']
@@ -86,6 +87,7 @@ def get_audio_features(track_id):
 
 
 def setUpDatabase(db_name):
+    '''Takes in the database Music.db as a parameter, sets up the database, and returns cur and conn.'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
