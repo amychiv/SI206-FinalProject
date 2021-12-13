@@ -1,0 +1,5 @@
+CORRELATION COEFFICIENTS
+Popularity vs. Danceability: -0.12275628577783662
+Popularity vs. Energy: 0.028029130747308954
+Popularity vs. Liveness: -0.01377931866354649
+Popularity vs. Tempo: 0.005824417228360462
